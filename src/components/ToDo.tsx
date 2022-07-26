@@ -37,6 +37,20 @@ function ToDo({ text, category, id }: IToDo) {
           Done
         </button>
       )}
+      <button
+        name="deleteBtn"
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+          setToDos((prev) => {
+            const targetIndex = prev.findIndex((e) => e.id === id);
+            return [
+              ...prev.slice(0, targetIndex),
+              ...prev.slice(targetIndex + 1),
+            ];
+          });
+        }}
+      >
+        Delete
+      </button>
     </li>
   );
 }
