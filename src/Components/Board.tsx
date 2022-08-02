@@ -59,10 +59,12 @@ function Board({ toDos, boardId }: IBoardProps) {
       text: toDo,
     };
     setToDos((prev) => {
-      return {
+      const newToDos = {
         ...prev,
         [boardId]: [newToDo, ...prev[boardId]],
       };
+      localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+      return newToDos;
     });
     setValue("toDo", "");
   };
@@ -91,6 +93,7 @@ function Board({ toDos, boardId }: IBoardProps) {
                 index={index}
                 toDoId={toDo.id}
                 toDoText={toDo.text}
+                boardId={boardId}
               />
             ))}
             {provided.placeholder}

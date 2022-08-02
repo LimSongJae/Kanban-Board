@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
@@ -22,39 +23,50 @@ const Wrapper = styled.div`
 `;
 
 function App() {
+  useEffect(() => {
+    const localToDos = JSON.parse(localStorage.getItem("LOCAL_TODO") as string);
+    if (localToDos) {
+      setToDos(localToDos);
+    }
+  }, []);
+
   const [toDos, setToDos] = useRecoilState(toDoState);
   const onDragEnd = (info: DropResult) => {
     console.log(info);
-    const { destination, draggableId, source } = info;
+    const { destination, source } = info;
     if (!destination) return;
     if (destination?.droppableId === source.droppableId) {
       // same board
       setToDos((prev) => {
         const toDosCopy = [...prev[source.droppableId]];
-        const temptoDos = toDosCopy[source.index];
+        const tempToDos = toDosCopy[source.index];
         toDosCopy.splice(source.index, 1);
-        toDosCopy.splice(destination.index, 0, temptoDos);
-        
-        return {
+        toDosCopy.splice(destination.index, 0, tempToDos);
+        const newToDos = {
           ...prev,
           [source.droppableId]: toDosCopy,
         };
+        localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+
+        return newToDos;
       });
     }
     if (destination.droppableId !== source.droppableId) {
       // cross board
       setToDos((prev) => {
         const sourceBoard = [...prev[source.droppableId]];
-        const temptoDos = sourceBoard[source.index];
+        const tempToDos = sourceBoard[source.index];
         const destinationBoard = [...prev[destination.droppableId]];
         sourceBoard.splice(source.index, 1);
-        destinationBoard.splice(destination?.index, 0, temptoDos);
-
-        return {
+        destinationBoard.splice(destination?.index, 0, tempToDos);
+        const newToDos = {
           ...prev,
           [source.droppableId]: sourceBoard,
           [destination.droppableId]: destinationBoard,
         };
+        localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+
+        return newToDos;
       });
     }
   };
