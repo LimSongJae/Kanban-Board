@@ -1,8 +1,8 @@
 import { Droppable } from "react-beautiful-dnd";
 import { useForm } from "react-hook-form";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { ITodo, toDoState } from "../atoms";
+import { ITodo, StorageKey, toDoState } from "../atoms";
 import DraggableCard from "./DraggableCard";
 
 const Wrapper = styled.div`
@@ -13,6 +13,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 `;
 const Title = styled.h2`
   text-align: center;
@@ -42,6 +43,12 @@ const Form = styled.form`
     width: 100%;
   }
 `;
+
+const DelBoard = styled.button`
+  position: absolute;
+  top: 2px;
+  right: 2px;
+`;
 interface IBoardProps {
   toDos: ITodo[];
   boardId: string;
@@ -52,7 +59,7 @@ interface IForm {
 }
 
 function Board({ toDos, boardId }: IBoardProps) {
-  const setToDos = useSetRecoilState(toDoState);
+  const [toDo, setToDos] = useRecoilState(toDoState);
   const onValid = ({ toDo }: IForm) => {
     const newToDo = {
       id: Date.now(),
@@ -63,7 +70,7 @@ function Board({ toDos, boardId }: IBoardProps) {
         ...prev,
         [boardId]: [newToDo, ...prev[boardId]],
       };
-      localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+      localStorage.setItem(StorageKey, JSON.stringify(newToDos));
       return newToDos;
     });
     setValue("toDo", "");
@@ -72,6 +79,18 @@ function Board({ toDos, boardId }: IBoardProps) {
   return (
     <Wrapper>
       <Title>{boardId}</Title>
+      <DelBoard
+        onClick={() => {
+          setToDos((prev) => {
+            const newToDo = { ...prev };
+            delete newToDo[boardId];
+
+            return newToDo;
+          });
+        }}
+      >
+        삭제
+      </DelBoard>
       <Form onSubmit={handleSubmit(onValid)}>
         <input
           {...register("toDo", { required: true })}
@@ -95,8 +114,17 @@ function Board({ toDos, boardId }: IBoardProps) {
                 toDoText={toDo.text}
                 boardId={boardId}
               />
-            ))}
-            {provided.placeholder}
+              ))}
+              {provided.placeholder}
+            <button
+              onClick={() => {
+                setToDos((prev) => {
+                  return { ...prev, [boardId]: [] };
+                });
+              }}
+            >
+              전체 삭제
+            </button>
           </Area>
         )}
       </Droppable>

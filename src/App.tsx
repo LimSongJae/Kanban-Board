@@ -1,9 +1,9 @@
-import { useEffect } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { toDoState } from "./atoms";
+import { modalState, StorageKey, toDoState } from "./atoms";
 import Board from "./Components/Board";
+import Modal from "./Components/Modal";
 
 const Boards = styled.div`
   display: grid;
@@ -14,7 +14,7 @@ const Boards = styled.div`
 
 const Wrapper = styled.div`
   display: flex;
-  max-width: 480px;
+  max-width: 800px;
   width: 100%;
   margin: 0 auto;
   justify-content: center;
@@ -22,14 +22,15 @@ const Wrapper = styled.div`
   height: 100vh;
 `;
 
-function App() {
-  useEffect(() => {
-    const localToDos = JSON.parse(localStorage.getItem("LOCAL_TODO") as string);
-    if (localToDos) {
-      setToDos(localToDos);
-    }
-  }, []);
+const BoardBtn = styled.button`
+  position: absolute;
+  right: 5px;
+  top: 5px;
+`;
 
+function App() {
+
+  const [modal, setModal] = useRecoilState(modalState);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const onDragEnd = (info: DropResult) => {
     console.log(info);
@@ -46,7 +47,7 @@ function App() {
           ...prev,
           [source.droppableId]: toDosCopy,
         };
-        localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+        localStorage.setItem(StorageKey, JSON.stringify(newToDos));
 
         return newToDos;
       });
@@ -64,7 +65,7 @@ function App() {
           [source.droppableId]: sourceBoard,
           [destination.droppableId]: destinationBoard,
         };
-        localStorage.setItem(`LOCAL_TODO`, JSON.stringify(newToDos));
+        localStorage.setItem(StorageKey, JSON.stringify(newToDos));
 
         return newToDos;
       });
@@ -78,6 +79,14 @@ function App() {
             <Board key={boardId} toDos={toDos[boardId]} boardId={boardId} />
           ))}
         </Boards>
+        <BoardBtn
+          onClick={() => {
+            setModal((prev) => !prev);
+          }}
+        >
+          보드추가하기
+        </BoardBtn>
+        <Modal />
       </Wrapper>
     </DragDropContext>
   );

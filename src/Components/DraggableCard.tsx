@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { toDoState } from "../atoms";
+import { saveToDos, StorageKey, toDoState } from "../atoms";
 
 const Card = styled.div<{ isDragging: boolean }>`
   background-color: ${(props) =>
@@ -35,9 +35,16 @@ function DraggableCard({
   const [toDo, setToDo] = useRecoilState(toDoState);
 
   useEffect(() => {
-    localStorage.setItem("LOCAL_TODO", JSON.stringify(toDo));
+    saveToDos(toDo);
   }, [toDo]);
 
+  const deleteTodo = (index: number) => {
+    setToDo((prev) => {
+      const newToDo = [...prev[boardId]];
+      newToDo.splice(index, 1);
+      return { ...prev, [boardId]: newToDo };
+    });
+  };
   return (
     <Draggable draggableId={toDoId + ""} index={index}>
       {(provided, snapshot) => (
@@ -48,13 +55,10 @@ function DraggableCard({
           {...provided.dragHandleProps}
         >
           {toDoText}
+          <button>수정</button>
           <DeleteBtn
             onClick={() => {
-              setToDo((prev) => {
-                const newToDo = [...prev[boardId]];
-                newToDo.splice(index, 1);
-                return { ...prev, [boardId]: newToDo };
-              });
+              deleteTodo(index);
             }}
           >
             삭제
