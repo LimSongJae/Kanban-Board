@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import { useForm } from "react-hook-form";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { ITodo, StorageKey, toDoState } from "../atoms";
+import { ITodo, saveToDos, toDoState } from "../atoms";
 import DraggableCard from "./DraggableCard";
 
 const Wrapper = styled.div`
@@ -60,6 +61,11 @@ interface IForm {
 
 function Board({ toDos, boardId }: IBoardProps) {
   const [toDo, setToDos] = useRecoilState(toDoState);
+
+  useEffect(() => {
+    saveToDos(toDo);
+  }, [toDo]);
+
   const onValid = ({ toDo }: IForm) => {
     const newToDo = {
       id: Date.now(),
@@ -70,7 +76,6 @@ function Board({ toDos, boardId }: IBoardProps) {
         ...prev,
         [boardId]: [newToDo, ...prev[boardId]],
       };
-      localStorage.setItem(StorageKey, JSON.stringify(newToDos));
       return newToDos;
     });
     setValue("toDo", "");
@@ -114,8 +119,8 @@ function Board({ toDos, boardId }: IBoardProps) {
                 toDoText={toDo.text}
                 boardId={boardId}
               />
-              ))}
-              {provided.placeholder}
+            ))}
+            {provided.placeholder}
             <button
               onClick={() => {
                 setToDos((prev) => {

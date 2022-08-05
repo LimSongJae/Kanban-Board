@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import styled from "styled-components";
-import { modalState, StorageKey, toDoState } from "./atoms";
+import { modalState, saveToDos, toDoState } from "./atoms";
 import Board from "./Components/Board";
 import Modal from "./Components/Modal";
 
@@ -29,9 +30,13 @@ const BoardBtn = styled.button`
 `;
 
 function App() {
-
-  const [modal, setModal] = useRecoilState(modalState);
+  const setModal = useSetRecoilState(modalState);
   const [toDos, setToDos] = useRecoilState(toDoState);
+
+  useEffect(() => {
+    saveToDos(toDos);
+  }, [toDos]);
+
   const onDragEnd = (info: DropResult) => {
     console.log(info);
     const { destination, source } = info;
@@ -47,7 +52,6 @@ function App() {
           ...prev,
           [source.droppableId]: toDosCopy,
         };
-        localStorage.setItem(StorageKey, JSON.stringify(newToDos));
 
         return newToDos;
       });
@@ -65,7 +69,6 @@ function App() {
           [source.droppableId]: sourceBoard,
           [destination.droppableId]: destinationBoard,
         };
-        localStorage.setItem(StorageKey, JSON.stringify(newToDos));
 
         return newToDos;
       });

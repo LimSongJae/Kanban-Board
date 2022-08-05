@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
+import { useForm } from "react-hook-form";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
-import { saveToDos, StorageKey, toDoState } from "../atoms";
+import { saveToDos, toDoState } from "../atoms";
 
 const Card = styled.div<{ isDragging: boolean }>`
   background-color: ${(props) =>
@@ -19,11 +20,20 @@ const DeleteBtn = styled.button`
   position: absolute;
   right: 5px;
 `;
+
+const ModifyInput = styled.input<{ toggle: boolean }>`
+  display: ${({ toggle }) => (toggle ? "block" : "none")};
+`;
+
 interface IDraggableCardProps {
   toDoId: number;
   toDoText: string;
   index: number;
   boardId: string;
+}
+
+interface IForm {
+  modify: string;
 }
 
 function DraggableCard({
@@ -33,6 +43,8 @@ function DraggableCard({
   boardId,
 }: IDraggableCardProps) {
   const [toDo, setToDo] = useRecoilState(toDoState);
+  const [modifyToggleBtn, setModifyToggleBtn] = useState(false);
+  const { register, handleSubmit } = useForm<IForm>();
 
   useEffect(() => {
     saveToDos(toDo);
@@ -45,6 +57,19 @@ function DraggableCard({
       return { ...prev, [boardId]: newToDo };
     });
   };
+
+  const onValid = ({ modify }: IForm) => {
+    const toDo = { id: Date.now(), text: modify };
+    setToDo((prev) => {
+      const newToDo = [...prev[boardId]];
+      newToDo.splice(index, 1, toDo);
+      return {
+        ...prev,
+        [boardId]: newToDo,
+      };
+    });
+  };
+
   return (
     <Draggable draggableId={toDoId + ""} index={index}>
       {(provided, snapshot) => (
@@ -55,7 +80,22 @@ function DraggableCard({
           {...provided.dragHandleProps}
         >
           {toDoText}
-          <button>수정</button>
+          <button
+            onClick={() => {
+              setModifyToggleBtn((prev) => !prev);
+            }}
+          >
+            {!modifyToggleBtn ? "수정" : "x"}
+          </button>
+          <form onSubmit={handleSubmit(onValid)}>
+            <ModifyInput
+              {...register("modify", { required: true })}
+              type="text"
+              toggle={modifyToggleBtn}
+              placeholder="sd"
+            />
+          </form>
+
           <DeleteBtn
             onClick={() => {
               deleteTodo(index);

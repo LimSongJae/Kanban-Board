@@ -22,7 +22,7 @@ export const defaultToDos: ITODoState = {
   Doing: [],
   Done: [],
 };
-export const StorageKey = "TODO";
+const StorageKey = "TODO";
 
 export const toDoState = atom<ITODoState>({
   key: "toDo",
