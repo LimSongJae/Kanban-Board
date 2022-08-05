@@ -14,6 +14,8 @@ const Card = styled.div<{ isDragging: boolean }>`
   box-shadow: ${(props) =>
     props.isDragging ? "0px 2px 5px rgba(0, 0, 0, 0.05)" : "none"};
   position: relative;
+  display: flex;
+  text-align: center;
 `;
 
 const DeleteBtn = styled.button`
@@ -21,8 +23,15 @@ const DeleteBtn = styled.button`
   right: 5px;
 `;
 
+const ModifyBtn = styled.button`
+  position: absolute;
+  right: 55px;
+`;
+
 const ModifyInput = styled.input<{ toggle: boolean }>`
   display: ${({ toggle }) => (toggle ? "block" : "none")};
+  width: 100px;
+  margin-left: 10px;
 `;
 
 interface IDraggableCardProps {
@@ -80,13 +89,13 @@ function DraggableCard({
           {...provided.dragHandleProps}
         >
           {toDoText}
-          <button
+          <ModifyBtn
             onClick={() => {
               setModifyToggleBtn((prev) => !prev);
             }}
           >
             {!modifyToggleBtn ? "수정" : "x"}
-          </button>
+          </ModifyBtn>
           <form onSubmit={handleSubmit(onValid)}>
             <ModifyInput
               {...register("modify", { required: true })}
